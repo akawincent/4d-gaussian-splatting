@@ -88,7 +88,7 @@ class Camera:
                 cuda_copy.__dict__[k] = v.to(cuda_copy.data_device)
         return cuda_copy
     
-    def cuda_nonecopy(self):
+    def cuda_nocopy(self):
         # cuda_copy = deepcopy(self)
         for k, v in self.__dict__.items():
             if isinstance(v, torch.Tensor):

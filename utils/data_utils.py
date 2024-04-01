@@ -13,7 +13,7 @@ from tqdm import tqdm
 #     def __init__(self, viewpoint_stack, white_background):
 #         self.viewpoint_stack = viewpoint_stack
 #         for viewpoint_data in self.viewpoint_stack:
-#             viewpoint_data.cuda_nonecopy()
+#             viewpoint_data.cuda_nocopy()
 #         # print(self.viewpoint_stack[0].image.device)
 #         # print(self.viewpoint_stack[199].image.device)
 #         # print(len(viewpoint_stack))
@@ -69,7 +69,7 @@ class CameraDataset():
                 viewpoint_cam.image = viewpoint_image
             # else:
             #     viewpoint_image = viewpoint_cam.image
-            viewpoint_cam.cuda_nonecopy()
+            viewpoint_cam.cuda_nocopy()
         
     def debuginfo(self):
         print(self.viewpoint_stack[0].image.device)

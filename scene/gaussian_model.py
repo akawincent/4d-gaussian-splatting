@@ -173,6 +173,12 @@ class GaussianModel:
             self.denom = denom
             self.optimizer.load_state_dict(opt_dict)
 
+    def cuda_nocopy(self):
+        # cuda_copy = deepcopy(self)
+        for k, v in self.__dict__.items():
+            if isinstance(v, torch.Tensor):
+                self.__dict__[k] = v.to("cuda")
+
     @property
     def get_scaling(self):
         return self.scaling_activation(self._scaling)
