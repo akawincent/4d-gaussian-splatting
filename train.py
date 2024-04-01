@@ -28,6 +28,7 @@ import numpy as np
 from omegaconf import OmegaConf
 from omegaconf.dictconfig import DictConfig
 from torch.utils.data import DataLoader
+from utils.data_utils import CameraDataset
 try:
     from torch.utils.tensorboard import SummaryWriter
     TENSORBOARD_FOUND = True
@@ -74,9 +75,12 @@ def training(dataset, opt, pipe, testing_iterations, saving_iterations, checkpoi
         env_map = None
         
     gaussians.env_map = env_map
-        
     training_dataset = scene.getTrainCameras()
+    testing_dataset = scene.getTestCameras()
+    print("Device of training data:\n")
     training_dataset.debuginfo()
+    print("Device of testing data:\n")
+    testing_dataset.debuginfo()
     # training_dataloader = DataLoader(training_dataset, batch_size=batch_size, shuffle=True, num_workers=8 if dataset.dataloader else 0, pin_memory=False, collate_fn=lambda x: x, drop_last=True)
     # training_dataloader = DataLoader(training_dataset, batch_size=batch_size, shuffle=True, num_workers=0, pin_memory=False, collate_fn=lambda x: x, drop_last=True) 
     
@@ -223,7 +227,11 @@ def training(dataset, opt, pipe, testing_iterations, saving_iterations, checkpoi
                 progress_bar.close()
 
             # Log and save
-            test_psnr = training_report(tb_writer, iteration, Ll1, loss, l1_loss, iter_start.elapsed_time(iter_end), testing_iterations, scene, render, (pipe, background), loss_dict)
+            test_psnr = training_report(tb_writer, iteration, Ll1, loss, l1_loss, 
+                                        iter_start.elapsed_time(iter_end), testing_iterations, 
+                                        scene, render, (pipe, background), 
+                                        training_dataset, testing_dataset, loss_dict)
+            
             if (iteration in testing_iterations):
                 if test_psnr >= best_psnr:
                     best_psnr = test_psnr
@@ -280,7 +288,8 @@ def prepare_output_and_logger(args):
         print("Tensorboard not available: not logging progress")
     return tb_writer
 
-def training_report(tb_writer, iteration, Ll1, loss, l1_loss, elapsed, testing_iterations, scene : Scene, renderFunc, renderArgs, loss_dict=None):
+def training_report(tb_writer, iteration, Ll1, loss, l1_loss, elapsed, testing_iterations, scene : Scene, renderFunc, renderArgs, 
+                    trainingdataset : CameraDataset, testingdataset : CameraDataset, loss_dict=None):
     if tb_writer:
         tb_writer.add_scalar('train_loss_patches/l1_loss', Ll1.item(), iteration)
         tb_writer.add_scalar('train_loss_patches/ssim_loss', Ll1.item(), iteration)
@@ -307,8 +316,8 @@ def training_report(tb_writer, iteration, Ll1, loss, l1_loss, elapsed, testing_i
     psnr_test_iter = 0.0
     # Report test and samples of training set
     if iteration in testing_iterations:
-        validation_configs = ({'name': 'train', 'cameras' : [scene.getTrainCameras().viewpoint_stack[idx % len(scene.getTrainCameras())] for idx in range(5, 30, 5)]},
-                              {'name': 'test', 'cameras' : [scene.getTestCameras().viewpoint_stack[idx] for idx in range(len(scene.getTestCameras()))]})
+        validation_configs = ({'name': 'train', 'cameras' : [trainingdataset.viewpoint_stack[idx % trainingdataset.__len__()] for idx in range(5, 30, 5)]},
+                              {'name': 'test', 'cameras' : [testingdataset.viewpoint_stack[idx] for idx in range(testingdataset.__len__())]})
 
         for config in validation_configs:
             if config['cameras'] and len(config['cameras']) > 0:
