@@ -9,12 +9,12 @@ exhaust_test: True
 
 ModelParams:
   sh_degree: 3
-  source_path: "data/dnerf/jumpingjacks"
+  source_path: "/run/determined/workdir/data/D-NeRF/data/jumpingjacks"
   model_path: "output/dnerf/jumpingjacks"
   images: "images"
   resolution: 2
   white_background: False
-  data_device: "cuda"
+  data_device: 0
   eval: True
   extension: ".png"
   num_extra_pts: 0

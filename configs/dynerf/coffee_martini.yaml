@@ -9,12 +9,12 @@ exhaust_test: True
 
 ModelParams:
   sh_degree: 3
-  source_path: "data/N3V/coffee_martini"
+  source_path: "/run/determined/workdir/data/neural_3d_video/neural_3d_video/coffee_martini"
   model_path: "output/N3V/coffee_martini"
   images: "images"
   resolution: 2
   white_background: False
-  data_device: "cuda"
+  data_device: 0
   eval: True
   extension: ".png"
   num_extra_pts: 0
