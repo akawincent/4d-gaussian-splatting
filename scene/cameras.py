@@ -88,6 +88,12 @@ class Camera:
                 cuda_copy.__dict__[k] = v.to(cuda_copy.data_device)
         return cuda_copy
     
+    def cuda_nonecopy(self):
+        # cuda_copy = deepcopy(self)
+        for k, v in self.__dict__.items():
+            if isinstance(v, torch.Tensor):
+                self.__dict__[k] = v.to(self.data_device)
+    
 class MiniCam:
     def __init__(self, width, height, fovy, fovx, znear, zfar, world_view_transform, full_proj_transform):
         self.image_width = width
